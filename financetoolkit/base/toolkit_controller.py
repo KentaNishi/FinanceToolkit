@@ -10,7 +10,9 @@ from financetoolkit.base.models.fundamentals_model import (
     get_profile as _get_profile,
     get_quote as _get_quote,
     get_rating as _get_rating,
-    get_earning_call_transcript as _get_transcript
+    get_earning_call_transcript as _get_transcript,
+    get_revenue_by_geographic_segment as _get_revenue_by_geography,
+    get_revenue_by_business_segment as _get_revenue_by_business
 )
 from financetoolkit.base.models.historical_model import (
     convert_daily_to_yearly as _convert_daily_to_yearly,
@@ -77,6 +79,9 @@ class Toolkit:
             self._quote: pd.DataFrame = pd.DataFrame()
             self._enterprise: pd.DataFrame = pd.DataFrame()
             self._rating: pd.DataFrame = pd.DataFrame()
+            self._transcript: pd.DataFrame = pd.DataFrame()
+            self._revenue_by_geography: pd.DataFrame = pd.DataFrame()
+            self._revenue_by_business: pd.DataFrame = pd.DataFrame()
 
         # Initialization of Historical Variables
         self._daily_historical_data: pd.DataFrame = (
@@ -319,6 +324,75 @@ class Toolkit:
             self._transcript = _get_transcript(self._tickers, self._api_key, year)
 
         return self._transcript
+    
+    def get_transcript(self, year: int = 2023):
+        """
+        Returns a pandas dataframe containing the stock transcript information for the specified tickers.
+
+        Args:
+            limit (int): The number of results to return. Defaults to 100.
+
+        Raises:
+            ValueError: If an API key is not defined for FinancialModelingPrep.
+
+        Returns:
+            pandas.DataFrame: The stock transcript information for the specified tickers.
+        """
+        if not self._api_key:
+            return print(
+                "Please define an API key from FinancialModelingPrep to use this functionality."
+            )
+
+        if self._transcript.empty:
+            self._transcript = _get_transcript(self._tickers, self._api_key, year)
+
+        return self._transcript
+    
+    def get_revenue_by_geography(self, quarter: bool = True):
+        """
+        Returns a pandas dataframe containing the stock revenue_by_geography information for the specified tickers.
+
+        Args:
+            limit (int): The number of results to return. Defaults to 100.
+
+        Raises:
+            ValueError: If an API key is not defined for FinancialModelingPrep.
+
+        Returns:
+            pandas.DataFrame: The stock revenue_by_geography information for the specified tickers.
+        """
+        if not self._api_key:
+            return print(
+                "Please define an API key from FinancialModelingPrep to use this functionality."
+            )
+
+        if self._revenue_by_geography.empty:
+            self._revenue_by_geography = _get_revenue_by_geography(self._tickers, self._api_key, quarter)
+
+        return self._revenue_by_geography
+    
+    def get_revenue_by_business(self, quarter: bool = True):
+        """
+        Returns a pandas dataframe containing the stock revenue_by_business information for the specified tickers.
+
+        Args:
+            limit (int): The number of results to return. Defaults to 100.
+
+        Raises:
+            ValueError: If an API key is not defined for FinancialModelingPrep.
+
+        Returns:
+            pandas.DataFrame: The stock revenue_by_business information for the specified tickers.
+        """
+        if not self._api_key:
+            return print(
+                "Please define an API key from FinancialModelingPrep to use this functionality."
+            )
+
+        if self._revenue_by_business.empty:
+            self._revenue_by_business = _get_revenue_by_business(self._tickers, self._api_key, quarter)
+
+        return self._revenue_by_business
 
     def get_historical_data(self, start=None, end=None, period: str = "daily"):
         """

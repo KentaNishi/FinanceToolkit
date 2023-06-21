@@ -2,7 +2,9 @@
 __docformat__ = "numpy"
 
 import pandas as pd
-
+import certifi
+import json
+from urllib.request import urlopen
 
 def combine_dataframes(tickers: str | list[str], *args) -> pd.DataFrame:
     """
@@ -21,6 +23,21 @@ def combine_dataframes(tickers: str | list[str], *args) -> pd.DataFrame:
 
     return combined_df.sort_index(level=0, sort_remaining=False)
 
+def get_jsonparsed_data(url):
+    """
+    Receive the content of ``url``, parse it as JSON and return the object.
+
+    Parameters
+    ----------
+    url : str
+
+    Returns
+    -------
+    dict
+    """
+    response = urlopen(url, cafile=certifi.where())
+    data = response.read().decode("utf-8")
+    return json.loads(data)
 
 def handle_errors(func):
     """

@@ -3,6 +3,9 @@ __docformat__ = "numpy"
 
 
 import pandas as pd
+from financetoolkit.base.helpers import get_jsonparsed_data
+
+
 
 from financetoolkit.base.models.normalization_model import (
     convert_financial_statements,
@@ -341,11 +344,12 @@ def get_earning_call_transcript(tickers: list[str] | str, api_key: str,year: int
     for ticker in ticker_list:
         try:
             transcript = pd.read_json(
-                f"https://financialmodelingprep.com/api/v3/batch_earning_call_transcript/{ticker}?year={year}&apikey={api_key}"
+                f"https://financialmodelingprep.com/api/v4/batch_earning_call_transcript/{ticker}?year={year}&apikey={api_key}"
             )
         except Exception as error:
             raise ValueError(error) from error
-
+        
+        print(transcript)
         transcript = transcript.drop("symbol", axis=1).sort_values(by="date", ascending=True)
         transcript = transcript.set_index("date")
 
@@ -357,3 +361,105 @@ def get_earning_call_transcript(tickers: list[str] | str, api_key: str,year: int
         transcript_dataframe = transcript_dataframe.loc[ticker_list[0]]
 
     return transcript_dataframe
+
+def get_revenue_by_geographic_segment(tickers: list[str] | str, api_key: str,quarter: bool = True):
+    """
+    Description
+    ----
+    Gives information about the transcript of a company
+    Input
+    ----
+    ticker (list or string)
+       The company ticker (for example: "MSFT")
+    api_key (string)
+       The API Key obtained from https://financialmodelingprep.com/developer/docs/
+    quarter (bool)
+        quarter report or not
+    Output
+    ----
+    data (dataframe)
+       Data with variables in rows and the period in columns..
+    """
+    if isinstance(tickers, str):
+        ticker_list = [tickers]
+    elif isinstance(tickers, list):
+        ticker_list = tickers
+    else:
+        raise ValueError(f"Type for the tickers ({type(tickers)}) variable is invalid.")
+
+    revenue_dict = {}
+
+    for ticker in ticker_list:
+        try:
+            if quarter:
+                url = f"https://financialmodelingprep.com/api/v4/revenue-geographic-segmentation?symbol={ticker}&&period=quarter&structure=flat&apikey={api_key}"
+            else:
+                url = f"https://financialmodelingprep.com/api/v4/revenue-geographic-segmentation?symbol={ticker}&structure=flat&apikey={api_key}"
+            revenue_ = get_jsonparsed_data(url)
+        except Exception as error:
+            raise ValueError(error) from error
+        
+        print(revenue_)
+        revenue = pd.concat(revenue_, axis=0).dropna()
+        print(revenue)
+        revenue = revenue.rename_axis("date")
+        print(revenue)
+        revenue_dict[ticker] = revenue
+
+    revenue_dataframe = pd.concat(revenue_dict, axis=0).dropna()
+
+    if len(ticker_list) == 1:
+        revenue_dataframe = revenue_dataframe.loc[ticker_list[0]]
+
+    return revenue_dataframe
+
+def get_revenue_by_business_segment(tickers: list[str] | str, api_key: str,quarter: bool = True):
+    """
+    Description
+    ----
+    Gives information about the transcript of a company
+    Input
+    ----
+    ticker (list or string)
+       The company ticker (for example: "MSFT")
+    api_key (string)
+       The API Key obtained from https://financialmodelingprep.com/developer/docs/
+    quarter (bool)
+        quarter report or not
+    Output
+    ----
+    data (dataframe)
+       Data with variables in rows and the period in columns..
+    """
+    if isinstance(tickers, str):
+        ticker_list = [tickers]
+    elif isinstance(tickers, list):
+        ticker_list = tickers
+    else:
+        raise ValueError(f"Type for the tickers ({type(tickers)}) variable is invalid.")
+
+    revenue_dict = {}
+
+    for ticker in ticker_list:
+        try:
+            if quarter:
+                url = f"https://financialmodelingprep.com/api/v4/revenue-product-segmentation?symbol={ticker}&&period=quarter&structure=flat&apikey={api_key}"
+            else:
+                url = f"https://financialmodelingprep.com/api/v4/revenue-product-segmentation?symbol={ticker}&structure=flat&apikey={api_key}"
+            revenue_ = get_jsonparsed_data(url)
+        except Exception as error:
+            raise ValueError(error) from error
+        
+        print(revenue_)
+        revenue = pd.concat(revenue_, axis=0).dropna()
+        print(revenue)
+        revenue = revenue.rename_axis("date")
+        print(revenue)
+        revenue_dict[ticker] = revenue
+
+    revenue_dataframe = pd.concat(revenue_dict, axis=0).dropna()
+
+    if len(ticker_list) == 1:
+        revenue_dataframe = revenue_dataframe.loc[ticker_list[0]]
+
+    return revenue_dataframe
