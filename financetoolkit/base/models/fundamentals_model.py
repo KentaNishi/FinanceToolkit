@@ -309,3 +309,51 @@ def get_rating(tickers: list[str] | str, api_key: str, limit: int = 100):
         ratings_dataframe = ratings_dataframe.loc[ticker_list[0]]
 
     return ratings_dataframe
+
+
+def get_earning_call_transcript(tickers: list[str] | str, api_key: str,year: int = 2023):
+    """
+    Description
+    ----
+    Gives information about the transcript of a company
+    Input
+    ----
+    ticker (list or string)
+       The company ticker (for example: "MSFT")
+    api_key (string)
+       The API Key obtained from https://financialmodelingprep.com/developer/docs/
+    year (int)
+        The target year
+    Output
+    ----
+    data (dataframe)
+       Data with variables in rows and the period in columns..
+    """
+    if isinstance(tickers, str):
+        ticker_list = [tickers]
+    elif isinstance(tickers, list):
+        ticker_list = tickers
+    else:
+        raise ValueError(f"Type for the tickers ({type(tickers)}) variable is invalid.")
+
+    transcript_dict = {}
+
+    for ticker in ticker_list:
+        try:
+            transcript = pd.read_json(
+                f"https://financialmodelingprep.com/api/v3/batch_earning_call_transcript/{ticker}?year={year}&apikey={api_key}"
+            )
+        except Exception as error:
+            raise ValueError(error) from error
+
+        transcript = transcript.drop("symbol", axis=1).sort_values(by="date", ascending=True)
+        transcript = transcript.set_index("date")
+
+        transcript_dict[ticker] = transcript
+
+    transcript_dataframe = pd.concat(transcript_dict, axis=0).dropna()
+
+    if len(ticker_list) == 1:
+        transcript_dataframe = transcript_dataframe.loc[ticker_list[0]]
+
+    return transcript_dataframe
